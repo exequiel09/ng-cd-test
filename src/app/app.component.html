@@ -1,0 +1,13 @@
+<p>Start editing to see some magic happen :)</p>
+<input type="search" id="test" />
+
+<br />
+<br />
+<button (click)="loadLazyChunk()">Load Lazy Chunk</button>
+
+<br />
+<br />
+
+<button (click)="loadLazyChunk()" [unpatch]="['click']">
+  Load Lazy Chunk (unpatched)
+</button>
