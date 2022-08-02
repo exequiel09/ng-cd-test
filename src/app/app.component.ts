@@ -7,7 +7,7 @@ import {
   VERSION,
 } from '@angular/core';
 import { enterNgZone, leaveNgZone } from 'ngx-rxjs-zone-scheduler';
-import { defer, observeOn, subscribeOn, tap } from 'rxjs';
+import { asapScheduler, defer, observeOn, subscribeOn, tap } from 'rxjs';
 
 import { CdService } from './cd.service';
 
@@ -49,7 +49,7 @@ export class AppComponent implements AfterViewInit, DoCheck {
         tap(() =>
           console.log('DEBUG:: is in zone (tap 2) =', NgZone.isInAngularZone())
         ),
-        observeOn(enterNgZone(this._ngZone)),
+        observeOn(enterNgZone(this._ngZone, asapScheduler)),
         tap(() =>
           console.log('DEBUG:: is in zone (tap 3) =', NgZone.isInAngularZone())
         )
