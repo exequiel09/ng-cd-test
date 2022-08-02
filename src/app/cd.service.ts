@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { leaveNgZone } from 'ngx-rxjs-zone-scheduler';
-import { defer, observeOn, subscribeOn, take } from 'rxjs';
+import { defer, observeOn, scheduled, subscribeOn, take, tap } from 'rxjs';
 
 @Injectable()
 export class CdService {
@@ -185,13 +185,97 @@ export class CdService {
     const fn = () => {
       console.log('DEBUG:: is in zone =', NgZone.isInAngularZone());
 
-      defer(() =>
-        import('./hello.component').then((im) => {
-          console.log('DEBUG:: is in zone (then) =', NgZone.isInAngularZone());
-          return im;
-        })
-      )
-        .pipe(subscribeOn(leaveNgZone(this._ngZone)), take(1))
+      defer(() => {
+        console.log('DEBUG:: is in zone (defer) =', NgZone.isInAngularZone());
+        return import('./hello.component');
+      })
+        .pipe(
+          tap(() =>
+            console.log(
+              'DEBUG:: is in zone (before leave) =',
+              NgZone.isInAngularZone()
+            )
+          ),
+          subscribeOn(leaveNgZone(this._ngZone)),
+          tap(() =>
+            console.log(
+              'DEBUG:: is in zone (after leave) =',
+              NgZone.isInAngularZone()
+            )
+          ),
+          take(1)
+        )
+        .subscribe((im) => {
+          console.log('DEBUG:: is in zone (sub) =', NgZone.isInAngularZone());
+        });
+    };
+
+    if (wrapInTimeout) {
+      timeOutSymbol(fn, 100);
+      return;
+    }
+
+    fn();
+  }
+
+  mDeferLeaveSubTest(
+    wrapInTimeout = true,
+    timeOutSymbol = window['__zone_symbol__setTimeout']
+  ) {
+    const fn = () => {
+      console.log('DEBUG:: is in zone =', NgZone.isInAngularZone());
+
+      defer(() => {
+        console.log('DEBUG:: is in zone (defer) =', NgZone.isInAngularZone());
+        return scheduled(
+          import('./hello.component'),
+          leaveNgZone(this._ngZone)
+        );
+      })
+        .pipe(
+          tap(() =>
+            console.log(
+              'DEBUG:: is in zone (pipeline) =',
+              NgZone.isInAngularZone()
+            )
+          ),
+          take(1)
+        )
+        .subscribe((im) => {
+          console.log('DEBUG:: is in zone (sub) =', NgZone.isInAngularZone());
+        });
+    };
+
+    if (wrapInTimeout) {
+      timeOutSymbol(fn, 100);
+      return;
+    }
+
+    fn();
+  }
+
+  mDeferOutside(
+    wrapInTimeout = true,
+    timeOutSymbol = window['__zone_symbol__setTimeout']
+  ) {
+    const fn = () => {
+      console.log('DEBUG:: is in zone =', NgZone.isInAngularZone());
+
+      defer(() => {
+        console.log('DEBUG:: is in zone (defer) =', NgZone.isInAngularZone());
+        return this._ngZone.runOutsideAngular(() =>
+          import('./hello.component')
+        );
+      })
+        .pipe(
+          tap(() =>
+            console.log(
+              'DEBUG:: is in zone (pipeline) =',
+              NgZone.isInAngularZone()
+            )
+          ),
+          take(1)
+        )
         .subscribe((im) => {
           console.log('DEBUG:: is in zone (sub) =', NgZone.isInAngularZone());
         });

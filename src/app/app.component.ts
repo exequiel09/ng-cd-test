@@ -6,10 +6,8 @@ import {
   NgZone,
   VERSION,
 } from '@angular/core';
-import { defer, fromEvent, observeOn, subscribeOn, tap } from 'rxjs';
-import { leaveNgZone } from 'ngx-rxjs-zone-scheduler';
-import { Promise, setTimeout } from '@rx-angular/cdk/zone-less/browser';
-// import { fromEvent } from '@rx-angular/cdk/zone-less/rxjs';
+import { enterNgZone, leaveNgZone } from 'ngx-rxjs-zone-scheduler';
+import { defer, observeOn, subscribeOn, tap } from 'rxjs';
 
 import { CdService } from './cd.service';
 
@@ -35,31 +33,50 @@ export class AppComponent implements AfterViewInit, DoCheck {
     //   .subscribe(() => console.log('DEBUG:: microtask empty'));
 
     // this._cd.mDeferLeaveSub1();
+
+    defer(() => {
+      console.log('DEBUG:: is in zone (defer) =', NgZone.isInAngularZone());
+      return Promise.resolve(10).then((v) => {
+        console.log('DEBUG:: is in zone (then) =', NgZone.isInAngularZone());
+        return v;
+      });
+    })
+      .pipe(
+        tap(() =>
+          console.log('DEBUG:: is in zone (tap 1) =', NgZone.isInAngularZone())
+        ),
+        subscribeOn(leaveNgZone(this._ngZone)),
+        tap(() =>
+          console.log('DEBUG:: is in zone (tap 2) =', NgZone.isInAngularZone())
+        ),
+        observeOn(enterNgZone(this._ngZone)),
+        tap(() =>
+          console.log('DEBUG:: is in zone (tap 3) =', NgZone.isInAngularZone())
+        )
+      )
+      .subscribe(() => {
+        console.log('DEBUG:: is in zone =', NgZone.isInAngularZone());
+      });
   }
 
-  ngAfterViewInit() {
-    // fromEvent(document.querySelector('#test'), 'keyup').subscribe();
-    // this._ngZone.runOutsideAngular(() => {
-    //   fromEvent(document.querySelector('#test'), 'keyup').subscribe();
-    // });
-    // fromEvent(document.querySelector('#test'), 'keyup')
-    //   .pipe(
-    //     tap(() => {
-    //       console.log('DEBUG:: tap before =', NgZone.isInAngularZone());
-    //     }),
-    //     observeOn(leaveNgZone(this._ngZone)),
-    //     tap(() => {
-    //       console.log('DEBUG:: tap after =', NgZone.isInAngularZone());
-    //     })
-    //   )
-    //   .subscribe(() => {
-    //     console.log('DEBUG:: subscribe =', NgZone.isInAngularZone());
-    //   });
-  }
+  ngAfterViewInit() {}
 
   loadLazyChunk() {
     console.log('-------------------');
+    // this._cd.mDeferLeaveSubPerfect(false);
     this._cd.mDeferLeaveSubPerfect(false);
+  }
+
+  loadLazyChunkScheduled() {
+    console.log('-------------------');
+    // this._cd.mDeferLeaveSubPerfect(false);
+    this._cd.mDeferLeaveSubTest(false);
+  }
+
+  loadLazyChunkManual() {
+    console.log('-------------------');
+    // this._cd.mDeferLeaveSubPerfect(false);
+    this._cd.mDeferOutside(false);
   }
 
   ngDoCheck() {

@@ -3,11 +3,37 @@
 
 <br />
 <br />
-<button (click)="loadLazyChunk()">Load Lazy Chunk</button>
+<button (click)="loadLazyChunk()">Load Lazy Chunk (defer)</button>
 
 <br />
 <br />
 
 <button (click)="loadLazyChunk()" [unpatch]="['click']">
-  Load Lazy Chunk (unpatched)
+  Load Lazy Chunk (defer - unpatched)
+</button>
+
+<br />
+<br />
+<button (click)="loadLazyChunkScheduled()">
+  Load Lazy Chunk (defer - scheduled)
+</button>
+
+<br />
+<br />
+
+<button (click)="loadLazyChunkScheduled()" [unpatch]="['click']">
+  Load Lazy Chunk (defer - scheduled - unpatched)
+</button>
+
+<br />
+<br />
+<button (click)="loadLazyChunkManual()">
+  Load Lazy Chunk (defer - manual)
+</button>
+
+<br />
+<br />
+
+<button (click)="loadLazyChunkManual()" [unpatch]="['click']">
+  Load Lazy Chunk (defer - manual - unpatched)
 </button>
